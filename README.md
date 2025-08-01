@@ -24,29 +24,23 @@ This system processes spoken input in **Bangla**, **English**, or **Hindi**, tra
 ---
 
 ## 📁 Project Structure
+```bash
+backend/
+  ├── templates/
+  ├── app.py
+  ├── chat_stream.py
+  ├── tts.py
+  └── bntranslit_model.py
+fronted/
 
-multilingual-translator/
-│
-├── audio_input/ # Input audio files
-├── transcriptions/ # Transcribed text
-├── translations/ # Chinese translations
-├── tts_output/ # Final Chinese audio files
-│
-├── whisper_transcribe.py # Handles transcription using Whisper
-├── translate_with_grok.py # Calls Grok API for translation
-├── tts_with_elevenlabs.py # Converts Chinese text to speech
-├── main.py # Orchestration script
-│
-└── README.md # Project documentation
-
-
+```
 
 ## ⚙️ How It Works
 
 1. **Input**: An audio file in Bangla, English, or Hindi is uploaded.
-2. **Transcription**: `whisper_transcribe.py` uses STD Whisper models to convert speech to text.
-3. **Translation**: `translate_with_grok.py` sends the transcription to the Grok API, returning the Chinese translation.
-4. **Text-to-Speech**: `tts_with_elevenlabs.py` uses ElevenLabs API to synthesize the Chinese translation into audio.
+2. **Transcription**: `app.py` uses STD Whisper models to convert speech to text.
+3. **Translation**: `chat_stream.py` sends the transcription to the Grok API, returning the Chinese translation.
+4. **Text-to-Speech**: `tts.py` uses ElevenLabs API to synthesize the Chinese translation into audio.
 5. **Output**: The system outputs a natural-sounding Chinese audio file.
 
 ---
@@ -56,8 +50,8 @@ multilingual-translator/
 ```bash
 python main.py --input_path ./audio_input/sample_hindi.wav
 
-
-
+```
+```bash
 🔑 API Keys
 You will need the following API keys:
 
@@ -66,6 +60,7 @@ Grok API Key – for LLM translation
 ElevenLabs API Key – for TTS synthesis
 
 Set them as environment variables or in a .env file:
+```
 
 📌 Requirements
 Python 3.8+
