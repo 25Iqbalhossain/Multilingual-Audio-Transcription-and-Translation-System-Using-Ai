@@ -46,7 +46,7 @@ python-dotenv==1.1.1
 python-engineio==4.12.2
 python-socketio==5.13.0
 pyttsx3==2.99
-pywin32==310
+pywin32==306
 PyYAML==6.0.2
 requests==2.32.4
 setuptools==80.9.0
