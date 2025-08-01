@@ -25,7 +25,7 @@ native_lang_names = {
 }
 
 os.environ.pop("SSL_CERT_FILE", None)
-
+client = groq.Client(api_key="")
 
 def clean_text(text: str) -> str:
     return re.sub(r"\*(.*?)\*", r"\1", text).replace("*", "")
@@ -79,4 +79,5 @@ def stream_chat_response(prompt: str) -> str:
         return ""
 
     print()  # newline after streaming
+
     return "".join(chunks)
