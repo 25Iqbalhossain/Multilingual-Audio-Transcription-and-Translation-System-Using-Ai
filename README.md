@@ -1,4 +1,4 @@
-# Multilingual Audio Transcription and Translation System
+# Multilingual Audio Transcription and Translation System Using Ai
 
 This system processes spoken input in **Bangla**, **English**, or **Hindi**, transcribes it using Whisper, translates the transcript into **Chinese** using a Large Language Model (LLM) via the **Grok API**, and then generates spoken Chinese output using **ElevenLabs TTS**.
 
