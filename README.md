@@ -51,8 +51,9 @@ fronted/
 python main.py --input_path ./audio_input/sample_hindi.wav
 
 ```
+
+##🔑 API Keys
 ```bash
-🔑 API Keys
 You will need the following API keys:
 
 Grok API Key – for LLM translation
