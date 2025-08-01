@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI Chat with Voice & Avatar</title>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+  <script src="{{ url_for('static', filename='avatar.js') }}"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root {
+      --main-bg: #e9f0f7;
+      --glass: rgba(255, 255, 255, 0.9);
+      --primary: #007bff;
+      --primary-hover: #0056b3;
+      --radius: 14px;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--main-bg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: var(--glass);
+      backdrop-filter: blur(10px);
+      border-radius: var(--radius);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      width: 90%;
+      max-width: 800px;
+    }
+
+    .header-banner {
+      background: linear-gradient(90deg, #6f87ff, #92e6ff);
+      border-top-left-radius: var(--radius);
+      border-top-right-radius: var(--radius);
+      padding: 20px;
+      text-align: center;
+      margin: -30px -30px 20px -30px;
+    }
+
+    .header-banner h1 {
+      color: white;
+      font-size: 26px;
+      font-weight: 600;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin: 0;
+    }
+
+    .header-banner h1 img {
+      width: 38px;
+      animation: floatBot 3s ease-in-out infinite;
+    }
+
+    @keyframes floatBot {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    .input-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+
+    #userInput {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: var(--radius);
+      font-size: 16px;
+      outline: none;
+    }
+
+    button {
+      padding: 12px;
+      border: none;
+      border-radius: var(--radius);
+      background-color: var(--primary);
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    button:hover {
+      background-color: var(--primary-hover);
+    }
+
+    #langSelect {
+      padding: 10px;
+      border-radius: var(--radius);
+      font-size: 15px;
+      border: 1px solid #ccc;
+      background-color: white;
+      color: #333;
+      cursor: pointer;
+    }
+
+    #chatArea {
+      background: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: var(--radius);
+      padding: 16px;
+      height: 300px;
+      overflow-y: auto;
+    }
+
+    .msg {
+      margin: 8px 0;
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      max-width: 80%;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .user-msg {
+      background-color: #d6eaff;
+      align-self: flex-end;
+      margin-left: auto;
+    }
+
+    .bot-msg {
+      background-color: #f0f0f0;
+      align-self: flex-start;
+      margin-right: auto;
+    }
+
+    #loading {
+      text-align: center;
+      font-style: italic;
+      color: #666;
+      margin-top: 10px;
+      display: none;
+    }
+
+    @media (max-width: 600px) {
+      .input-row {
+        flex-direction: column;
+      }
+
+      button, #langSelect {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header-banner">
+      <h1>
+        <img src="https://img.icons8.com/color/48/robot-2.png" alt="🤖" />
+       Translation System 
+      </h1>
+    </div>
+
+    <div class="input-row">
+      <input id="userInput" type="text" placeholder="Type your message or use mic..." />
+      <button onclick="sendMessage()">📨</button>
+      <button onclick="startListening()">🎤</button>
+      <select id="langSelect" title="Select language">
+        <option value="bn-IN">বাংলা</option>
+        <option value="en-US" selected>English</option>
+        <option value="hi-IN">हिंदी</option>
+      </select>
+    </div>
+
+    <div id="loading">🤖 Bot is typing...</div>
+
+    <div id="chatArea">
+      <div class="msg bot-msg"><b>System:</b> Translate your Voice and text using our bot   !</div>
+    </div>
+  </div>
+
+  <script>
+    const socket = io();
+    let fullBotText = "";
+    const loadingIndicator = document.getElementById("loading");
+    const chatArea = document.getElementById("chatArea");
+
+    socket.on("connect", () => {
+      console.log("✅ Connected to server via Socket.IO");
+    });
+
+    socket.on("bot_text", data => {
+      fullBotText += data.text;
+      appendOrUpdateBotMessage(fullBotText);
+    });
+
+    socket.on("bot_audio", data => {
+      loadingIndicator.style.display = "none";
+      if (!data.audio) return;
+      try {
+        const audioBlob = base64ToBlob(data.audio, "audio/wav");
+        const audio = new Audio(URL.createObjectURL(audioBlob));
+        audio.play();
+      } catch (err) {
+        console.error("Audio playback error:", err);
+      }
+    });
+
+    function sendMessage() {
+      const input = document.getElementById("userInput");
+      const message = input.value.trim();
+      if (message) {
+        appendMessage("You", message);
+        socket.emit("user_message", { message });
+        input.value = "";
+        fullBotText = "";
+        loadingIndicator.textContent = "Bot is typing...";
+        loadingIndicator.style.display = "block";
+      }
+    }
+
+    function startListening() {
+      if (!("webkitSpeechRecognition" in window)) {
+        alert("❌ Speech recognition not supported in this browser.");
+        return;
+      }
+
+      const recognition = new webkitSpeechRecognition();
+      const selectedLang = document.getElementById("langSelect").value;
+      recognition.lang = selectedLang;
+
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        loadingIndicator.textContent = `🎤 Listening (${selectedLang})...`;
+        loadingIndicator.style.display = "block";
+      };
+
+      recognition.onerror = () => {
+        loadingIndicator.style.display = "none";
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById("userInput").value = transcript;
+        sendMessage();
+      };
+
+      recognition.onend = () => {
+        loadingIndicator.textContent = "Bot is typing...";
+      };
+
+      recognition.start();
+    }
+
+    function appendMessage(sender, text) {
+      const msg = document.createElement("div");
+      msg.className = `msg ${sender === "You" ? "user-msg" : "bot-msg"}`;
+      msg.innerHTML = `<b>${sender}:</b> ${escapeHtml(text)}`;
+      chatArea.appendChild(msg);
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    function appendOrUpdateBotMessage(text) {
+      const messages = chatArea.querySelectorAll(".msg");
+      const last = messages[messages.length - 1];
+      if (last && last.classList.contains("bot-msg")) {
+        last.innerHTML = `<b>Bot:</b> ${escapeHtml(text)}`;
+      } else {
+        appendMessage("Bot", text);
+      }
+    }
+
+    function base64ToBlob(base64, mime) {
+      const byteChars = atob(base64);
+      const byteNumbers = new Array(byteChars.length);
+      for (let i = 0; i < byteChars.length; i++) {
+        byteNumbers[i] = byteChars.charCodeAt(i);
+      }
+      return new Blob([new Uint8Array(byteNumbers)], { type: mime });
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
