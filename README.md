@@ -52,7 +52,7 @@ python main.py --input_path ./audio_input/sample_hindi.wav
 
 ```
 
-##🔑 API Keys
+## 🔑 API Keys
 ```bash
 You will need the following API keys:
 
@@ -61,6 +61,11 @@ Grok API Key – for LLM translation
 ElevenLabs API Key – for TTS synthesis
 
 Set them as environment variables or in a .env file:
+```
+## 🚀 Running Instructions 
+```bash
+python app.py
+local host http://localhost:5000
 ```
 
 📌 Requirements
