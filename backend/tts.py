@@ -6,8 +6,10 @@ import requests
 from pydub import AudioSegment
 from datetime import datetime
 
-ELEVENLABS_API_KEY 
-VOICE_ID 
+ELEVENLABS_API_KEY = "your-real-api-key"
+VOICE_ID = "your-voice-id"
+
+
 
 def generate_tts_audio(text: str):
     try:
@@ -42,3 +44,4 @@ def generate_tts_audio(text: str):
     except Exception as e:
         print(f"❌ TTS generation failed: {e}")
         return None, None
+
